@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH --account=def-rieseber
+#SBATCH --time=4-10
+#SBATCH --cpus-per-task=10
+#SBATCH --mem=50G
+#SBATCH --array=1-17
+Number_ch=`printf %02d $SLURM_ARRAY_TASK_ID`
+
+export TMPDIR=/home/egonza02/scratch/LD/LDHELMET/ANNUUS_POP/RR/CAL/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/egonza02/projects/def-rieseber/egonza02/bin/BOOST_OLD/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/egonza02/projects/def-rieseber/egonza02/bin/GLS_OLD/lib/
+
+mkdir -p output &&
+/home/egonza02/projects/def-rieseber/egonza02/bin/LDHELMET/LDhelmet_v1.10/ldhelmet find_confs --num_threads 10 -w 50 -o output/output_"$Number_ch".conf "$SLURM_ARRAY_TASK_ID"_*.fasta
+
+#table_gen
+mkdir -p output &&
+/home/egonza02/projects/def-rieseber/egonza02/bin/LDHELMET/LDhelmet_v1.10/ldhelmet table_gen --num_threads 10 -c output/output_"$Number_ch".conf -t 0.0139 -r 0.0 0.1 10.0 1.0 100.0 -o output
+/output_"$Number_ch".lk
+
+#pade
+mkdir -p output &&
+/home/egonza02/projects/def-rieseber/egonza02/bin/LDHELMET/LDhelmet_v1.10/ldhelmet pade --num_threads 10 -c output/output_"$Number_ch".conf -t 0.0139 -x 11 -o  output/output_"$Number_ch".pad
+e
+
+#rjmcmc
+mkdir -p output &&
+/home/egonza02/projects/def-rieseber/egonza02/bin/LDHELMET/LDhelmet_v1.10/ldhelmet rjmcmc --num_threads 10 -w 50 -l output/output_"$Number_ch".lk -p output/output_"$Number_ch".pade -b 50 --p
+os_file /home/egonza02/scratch/LD/LDHELMET/ANNUUS_POP/SNP_POS_FILES/CAL/Ha412HOChr"$Number_ch"_Ldhelmet_SNPs.ldhelmet.pos --snps_file /home/egonza02/scratch/LD/LDHELMET/ANNUUS_POP/SNP_POS_FI
+LES/CAL/Ha412HOChr"$Number_ch"_Ldhelmet_SNPs.ldhelmet.snps --burn_in 100000 -n 1000000 -o output/output_"$Number_ch".post
+
+#post_to_text
+mkdir -p output &&
+/home/egonza02/projects/def-rieseber/egonza02/bin/LDHELMET/LDhelmet_v1.10/ldhelmet post_to_text -m -p0.025 -p0.5 -p0.0975 -o Ha412HOChr"$Number_ch"_final_recombrates.txt output/output_"$Numb
+er_ch".post
