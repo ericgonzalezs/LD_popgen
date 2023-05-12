@@ -1,3 +1,4 @@
+#example for one population
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -112,4 +113,33 @@ save.image("Plots_cal_2M_map_TE_N.Rdata")
 
 
 ############
+
+to plot all populations
+load("Plots_cal_2M_map_TE.Rdata")
+load("Plots_tex_2M_map_TE.Rdata")
+load("Plots_tex_2M_map_TE_N.Rdata")
+load("Plots_cal_2M_map_TE_N.Rdata")
+
+
+jpeg("Chr1-17_annus_CAL_TEX_CAL_N_TEX_N.jpg",  width=4000, height= 6000)
+par(mfrow=c(9,2))
+for(f in 1:17) {
+name <-  paste("chr_CAL_", f, sep="")
+spln_CAL <- paste("spline_CAL_", f, sep="")
+spln_TEX <- paste("spline_TEX_", f, sep="")
+spln_CAL_N <- paste("spline_CAL_N", f, sep="")
+spln_TEX_N <- paste("spline_TEX_N", f, sep="")
+plot(eval(as.name(name))$POS, eval(as.name(name))$Pperbase, type="n", ylim=c(0, 0.025), main=paste("ANN CAL TEX CAL_N TEX_N Chr", f, sep=" " ),  xlab="bp", ylab="p per bp", cex.axis=3, cex.l
+ab=3, cex.main=4)
+lines(eval(as.name(spln_CAL)), col='red', lwd=3)
+lines(eval(as.name(spln_TEX)), col='blue', lwd=3)
+lines(eval(as.name(spln_CAL_N)), col='green', lwd=3)
+lines(eval(as.name(spln_TEX_N)), col='purple', lwd=3)
+legend("topright", legend = c("CAL", "TEX", "CAL_N", "TEX_N"), col=c("red", "blue", "green", "purple"), pch = 16, cex = 4)
+ }
+dev.off()
+
+save.image("Plots_ALL_2M_map_TE.Rdata")
+
+
 
